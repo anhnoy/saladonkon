@@ -149,7 +149,7 @@ const BookingLookupPage = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-               <div className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service is not available.</div>
+               <div className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service coming soon.</div>
             <div className="text-3xl font-playfair font-bold mb-4">Find Your Booking</div>
             <p className="text-gray-600">
               Enter your booking code and phone number to view your reservation details

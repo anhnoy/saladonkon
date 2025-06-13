@@ -362,7 +362,7 @@ const BookingWidget = ({ onClose, selectedRoom }: BookingWidgetProps) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-                 <h1 className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service is not available.</h1>
+                 <h1 className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service coming soon.</h1>
       <div className="p-4 sm:p-6 border-b">
         
         <div className="flex justify-between items-center">

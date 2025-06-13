@@ -65,7 +65,7 @@ const ActivitiesPage = () => {
         <div className="absolute inset-0 bg-black bg-opacity-50" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service is not available.</h1>
+            <h1 className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-red-500">Sorry, this service coming soon.</h1>
            <h1 className="text-4xl md:text-5xl font-playfair font-bold mb-4 text-white">Discover Our Experiences</h1>
             <p className="max-w-2xl mx-auto text-lg">
               Immerse yourself in authentic experiences and create unforgettable memories.
