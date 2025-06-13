@@ -26,40 +26,27 @@ import NotFoundPage from './pages/NotFoundPage';
 import { useReviewsStore } from './store/reviewsStore';
 import { useBookingStore } from './store/bookingStore';
 import { useRoomsStore } from './store/roomsStore';
-import { supabase } from './store/supabaseClient';
 import roomsData from './data/roomsData';
 
 function App() {
-  const { initializeRealtime: initializeReviewsRealtime, fetchReviews } = useReviewsStore();
-  const { initializeRealtime: initializeBookingsRealtime, fetchBookings } = useBookingStore();
+  const { fetchReviews } = useReviewsStore();
+  const { fetchBookings } = useBookingStore();
   const { rooms, addRoom } = useRoomsStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Initialize Supabase auth listener
-        supabase.auth.onAuthStateChange((event, session) => {
-          if (event === 'SIGNED_OUT') {
-            navigate('/admin/login');
-          }
-        });
-
-        // Initialize realtime subscriptions
-        initializeReviewsRealtime();
-        initializeBookingsRealtime();
-
         // Fetch initial data with error handling
         try {
           await fetchReviews();
         } catch (error) {
-          console.warn('Reviews table not available yet:', error);
+          console.warn('Reviews data not available yet:', error);
         }
 
         try {
           await fetchBookings();
         } catch (error) {
-          console.warn('Bookings table not available yet:', error);
+          console.warn('Bookings data not available yet:', error);
         }
 
         // Initialize rooms data if store is empty
@@ -89,7 +76,7 @@ function App() {
     };
 
     initializeApp();
-  }, [initializeReviewsRealtime, initializeBookingsRealtime, fetchReviews, fetchBookings, navigate, rooms.length, addRoom]);
+  }, [fetchReviews, fetchBookings, rooms.length, addRoom]);
 
   return (
     <Routes>

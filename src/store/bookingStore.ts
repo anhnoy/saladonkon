@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase } from './supabaseClient';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Booking {
   id: string;
@@ -22,7 +20,6 @@ interface Booking {
 
 interface BookingStore {
   bookings: Booking[];
-  channel: RealtimeChannel | null;
   initializeRealtime: () => void;
   fetchBookings: () => Promise<void>;
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => Promise<void>;
@@ -35,109 +32,49 @@ export const useBookingStore = create<BookingStore>()(
   persist(
     (set, get) => ({
       bookings: [],
-      channel: null,
 
       initializeRealtime: () => {
-        const channel = supabase
-          .channel('bookings_channel')
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'bookings'
-            },
-            async () => {
-              // Fetch fresh data when changes occur
-              await get().fetchBookings();
-            }
-          )
-          .subscribe();
-
-        set({ channel });
+        // ไม่มีระบบ realtime เพราะไม่มี supabase
+        console.log('Realtime not supported in mock mode.');
       },
 
       fetchBookings: async () => {
-        try {
-          const { data, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          set({ bookings: data });
-        } catch (error) {
-          console.error('Error fetching bookings:', error);
-        }
+        console.log('Mock: fetchBookings');
+        set({ bookings: [] }); // mock data หรือดึงจาก local
       },
-      
-      addBooking: async (booking) => {
-        try {
-          const { data, error } = await supabase
-            .from('bookings')
-            .insert([{
-              ...booking,
-              createdAt: new Date().toISOString()
-            }])
-            .select();
 
-          if (error) throw error;
-          await get().fetchBookings();
-        } catch (error) {
-          console.error('Error adding booking:', error);
-          throw error;
-        }
+      addBooking: async (booking) => {
+        console.log('Mock: addBooking', booking);
+        const newBooking: Booking = {
+          ...booking,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString(),
+        };
+        set({ bookings: [newBooking, ...get().bookings] });
       },
 
       updateBooking: async (id, updates) => {
-        try {
-          const { error } = await supabase
-            .from('bookings')
-            .update(updates)
-            .eq('id', id);
-
-          if (error) throw error;
-          await get().fetchBookings();
-        } catch (error) {
-          console.error('Error updating booking:', error);
-          throw error;
-        }
+        console.log('Mock: updateBooking', id, updates);
+        const updated = get().bookings.map((b) =>
+          b.id === id ? { ...b, ...updates } : b
+        );
+        set({ bookings: updated });
       },
 
       fetchUserBookings: async (userId) => {
-        try {
-          const { data, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('userId', userId)
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          set({ bookings: data });
-        } catch (error) {
-          console.error('Error fetching user bookings:', error);
-          throw error;
-        }
+        console.log('Mock: fetchUserBookings for userId:', userId);
+        const userBookings = get().bookings.filter((b) => b.userId === userId);
+        set({ bookings: userBookings });
       },
 
       fetchAllBookings: async () => {
-        try {
-          const { data, error } = await supabase
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          set({ bookings: data });
-        } catch (error) {
-          console.error('Error fetching all bookings:', error);
-          throw error;
-        }
-      }
+        console.log('Mock: fetchAllBookings');
+        set({ bookings: get().bookings });
+      },
     }),
     {
       name: 'booking-storage',
-      partialize: (state) => ({ bookings: state.bookings })
+      partialize: (state) => ({ bookings: state.bookings }),
     }
   )
 );

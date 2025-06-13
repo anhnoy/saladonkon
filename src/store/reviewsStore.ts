@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { supabase } from './supabaseClient';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Review {
   id: string;
@@ -16,7 +14,7 @@ export interface Review {
 
 interface ReviewsState {
   reviews: Review[];
-  channel: RealtimeChannel | null;
+  channel: null; // Removed RealtimeChannel
   addReview: (review: Omit<Review, 'id' | 'status' | 'date'>) => Promise<void>;
   updateReview: (id: string, review: Partial<Review>) => Promise<void>;
   deleteReview: (id: string) => Promise<void>;
@@ -31,34 +29,14 @@ export const useReviewsStore = create<ReviewsState>()(
       channel: null,
 
       initializeRealtime: () => {
-        const channel = supabase
-          .channel('reviews_channel')
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'reviews'
-            },
-            async () => {
-              // Fetch fresh data when changes occur
-              await get().fetchReviews();
-            }
-          )
-          .subscribe();
-
-        set({ channel });
+        // No-op (realtime removed)
+        console.log('Realtime removed - no connection established.');
       },
 
       fetchReviews: async () => {
         try {
-          const { data, error } = await supabase
-            .from('reviews')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-          if (error) throw error;
-          set({ reviews: data });
+          // You can replace this with fetching from localStorage or a REST API later
+          console.log('Fetching reviews... (no Supabase)');
         } catch (error) {
           console.error('Error fetching reviews:', error);
         }
@@ -66,17 +44,13 @@ export const useReviewsStore = create<ReviewsState>()(
 
       addReview: async (review) => {
         try {
-          const { data, error } = await supabase
-            .from('reviews')
-            .insert([{
-              ...review,
-              status: 'pending',
-              created_at: new Date().toISOString()
-            }])
-            .select();
-
-          if (error) throw error;
-          await get().fetchReviews();
+          const newReview: Review = {
+            id: crypto.randomUUID(),
+            ...review,
+            status: 'pending',
+            date: new Date().toISOString()
+          };
+          set((state) => ({ reviews: [newReview, ...state.reviews] }));
         } catch (error) {
           console.error('Error adding review:', error);
           throw error;
@@ -85,13 +59,11 @@ export const useReviewsStore = create<ReviewsState>()(
 
       updateReview: async (id, review) => {
         try {
-          const { error } = await supabase
-            .from('reviews')
-            .update(review)
-            .eq('id', id);
-
-          if (error) throw error;
-          await get().fetchReviews();
+          set((state) => ({
+            reviews: state.reviews.map((r) =>
+              r.id === id ? { ...r, ...review } : r
+            )
+          }));
         } catch (error) {
           console.error('Error updating review:', error);
           throw error;
@@ -100,13 +72,9 @@ export const useReviewsStore = create<ReviewsState>()(
 
       deleteReview: async (id) => {
         try {
-          const { error } = await supabase
-            .from('reviews')
-            .delete()
-            .eq('id', id);
-
-          if (error) throw error;
-          await get().fetchReviews();
+          set((state) => ({
+            reviews: state.reviews.filter((r) => r.id !== id)
+          }));
         } catch (error) {
           console.error('Error deleting review:', error);
           throw error;
